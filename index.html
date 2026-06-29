@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hipe Playing | Reproductor musical para OBS</title>
+  <meta name="description" content="Widget musical para OBS que muestra la música activa de Windows usando Streamer.bot y SMTC, con portada, progreso, layouts y panel visual." />
+  <link rel="icon" type="image/png" href="assets/images/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050711;
+      --bg2: #090d1a;
+      --panel: rgba(14, 18, 34, .78);
+      --panel2: rgba(20, 24, 44, .70);
+      --line: rgba(148, 163, 184, .16);
+      --line2: rgba(78, 242, 220, .28);
+      --txt: #f8f3ff;
+      --muted: #a9a3ba;
+      --soft: #7f7792;
+      --purple: #8b5cf6;
+      --purple2: #c084fc;
+      --cyan: #46e9ff;
+      --mint: #5ff7bd;
+      --pink: #ff62bd;
+      --warn: #ffd166;
+      --shadow: 0 28px 90px rgba(0,0,0,.50);
+      --radius: 26px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--txt);
+      background:
+        radial-gradient(circle at 14% 5%, rgba(139, 92, 246, .35), transparent 30rem),
+        radial-gradient(circle at 84% 12%, rgba(70, 233, 255, .17), transparent 28rem),
+        radial-gradient(circle at 48% 45%, rgba(255, 98, 189, .08), transparent 34rem),
+        linear-gradient(180deg, #050711 0%, #080a13 45%, #050711 100%);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+      opacity: .34;
+      background-image:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: linear-gradient(to bottom, #000 0%, transparent 78%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.045) 46%, transparent 56%);
+      transform: translateX(-92%);
+      animation: shine 10s ease-in-out infinite;
+    }
+
+    @keyframes shine {
+      0%, 62% { transform: translateX(-95%); opacity: 0; }
+      74% { opacity: .45; }
+      100% { transform: translateX(95%); opacity: 0; }
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 38px)); margin: 0 auto; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid rgba(148, 163, 184, .13);
+      background: rgba(5, 7, 17, .78);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar-inner {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 16px rgba(139, 92, 246, .52));
+      flex-shrink: 0;
+    }
+
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-text {
+      font-family: Rajdhani, sans-serif;
+      font-size: 27px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      background: linear-gradient(120deg, #fff 0%, #c084fc 28%, #ff62bd 48%, #46e9ff 72%, #fff 100%);
+      background-size: 260% 260%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradientMove 7s ease infinite;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(192, 132, 252, .20);
+      background: rgba(139, 92, 246, .16);
+      color: #c9b9ff;
+      font-family: Rajdhani, sans-serif;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    @keyframes gradientMove {
+      0%,100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .nav a {
+      padding: 10px 12px;
+      border-radius: 999px;
+      color: #aaa3bb;
+      font-size: 14px;
+      font-weight: 800;
+      transition: .18s ease;
+    }
+
+    .nav a:hover {
+      color: #fff;
+      background: rgba(255,255,255,.07);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 46px;
+      border-radius: 999px;
+      padding: 12px 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(0,0,0,.24);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      font-family: Inter, sans-serif;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px rgba(70,233,255,.18) inset, 0 16px 38px rgba(0,0,0,.34), 0 0 28px rgba(70,233,255,.20);
+      border-color: rgba(70, 233, 255, .40);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+    }
+
+    .btn-secondary {
+      background: rgba(22, 18, 34, .82);
+      border-color: rgba(192, 132, 252, .24);
+    }
+
+    .btn-ghost {
+      background: rgba(11, 31, 42, .72);
+      border-color: rgba(70, 233, 255, .22);
+      color: #dffcff;
+    }
+
+    .hero {
+      padding: 70px 0 46px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(420px, .90fr);
+      gap: 50px;
+      align-items: center;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 13px;
+      border: 1px solid rgba(192,132,252,.32);
+      background: rgba(139,92,246,.13);
+      color: #c9b8ff;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 17px;
+      font-family: Rajdhani, sans-serif;
+      font-size: clamp(58px, 8vw, 112px);
+      line-height: .78;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    h1 span {
+      display: block;
+      background: linear-gradient(120deg, #fff 0%, #c084fc 22%, #ff62bd 44%, #46e9ff 70%, #fff 100%);
+      background-size: 260% 260%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradientMove 7s ease infinite;
+    }
+
+    .lead {
+      margin: 0 0 26px;
+      max-width: 720px;
+      color: #c2bdd1;
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 680px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 33px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.15);
+      background: rgba(255,255,255,.055);
+      color: #b7b1c8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge::before {
+      content: "✓";
+      display: grid;
+      place-items: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      color: #07130f;
+      background: var(--mint);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .preview-shell {
+      position: relative;
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 22% 10%, rgba(139,92,246,.38), transparent 20rem),
+        radial-gradient(circle at 86% 20%, rgba(70,233,255,.16), transparent 18rem),
+        rgba(9, 12, 24, .84);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .preview-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .20;
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,.05) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,.05) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,.05) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.05) 75%);
+      background-size: 28px 28px;
+      background-position: 0 0, 0 14px, 14px -14px, -14px 0px;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .window-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      color: #b7b0c8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dots i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.23);
+    }
+
+    .window-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(70,233,255,.22);
+      background: rgba(70,233,255,.08);
+      color: #aefaff;
+    }
+
+    .widget-demo {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      gap: 12px;
+      align-items: stretch;
+      padding: 12px;
+      border-radius: 24px;
+      background: rgba(0,0,0,.42);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 20px 42px rgba(0,0,0,.30);
+    }
+
+    .cover-demo {
+      min-height: 118px;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.45), transparent 24%),
+        linear-gradient(135deg, #7c3aed, #ff62bd 48%, #46e9ff);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.20);
+    }
+
+    .cover-demo::after {
+      content: "♪";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 70px;
+      color: rgba(255,255,255,.86);
+      text-shadow: 0 0 24px rgba(255,255,255,.30);
+    }
+
+    .info-demo {
+      position: relative;
+      min-height: 118px;
+      border-radius: 18px;
+      padding: 18px 22px 16px;
+      overflow: hidden;
+      background:
+        linear-gradient(0deg, rgba(64,57,65,.38), rgba(64,57,65,.38)),
+        linear-gradient(135deg, rgba(139,92,246,.25), rgba(70,233,255,.16)),
+        rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .topline-demo {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .pill-demo {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.26);
+      border: 1px solid rgba(255,255,255,.13);
+      color: rgba(255,255,255,.90);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+    }
+
+    .song-title {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-artist {
+      margin-top: 5px;
+      color: rgba(255,255,255,.82);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .bar-demo {
+      margin-top: 14px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.26);
+      overflow: hidden;
+    }
+
+    .bar-demo i {
+      display: block;
+      width: 42%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--mint));
+      box-shadow: 0 0 18px rgba(70,233,255,.32);
+    }
+
+    .time-demo {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 7px;
+      color: rgba(255,255,255,.82);
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .layout-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini-layout {
+      min-height: 86px;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,.14);
+      background: rgba(255,255,255,.045);
+      padding: 11px;
+      overflow: hidden;
+    }
+
+    .mini-layout strong {
+      display: block;
+      font-family: Rajdhani, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .mini-normal, .mini-compact, .mini-minimal {
+      display: grid;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .mini-normal { grid-template-columns: 30px 1fr; }
+    .mini-compact { grid-template-columns: 1fr; }
+    .mini-minimal { grid-template-columns: 30px 1fr; }
+
+    .mini-cover {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #7c3aed, #ff62bd, #46e9ff);
+    }
+
+    .mini-lines span {
+      display: block;
+      height: 7px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.28);
+      margin: 5px 0;
+    }
+
+    .mini-lines span:nth-child(1) { width: 86%; }
+    .mini-lines span:nth-child(2) { width: 55%; background: rgba(70,233,255,.30); }
+    .mini-lines span:nth-child(3) { width: 72%; height: 5px; background: rgba(95,247,189,.28); }
+
+    section {
+      padding: 56px 0;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: 13px;
+    }
+
+    h2 {
+      margin: 8px 0 0;
+      font-family: Rajdhani, sans-serif;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: .95;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .section-note {
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .features {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card, .step, .panel, .faq-item, .trouble-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 16px 54px rgba(0,0,0,.24);
+    }
+
+    .card-icon {
+      font-size: 30px;
+      margin-bottom: 12px;
+    }
+
+    .card h3, .step h3, .panel h3, .trouble-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p, .step p, .panel p, .trouble-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.50;
+      font-size: 14.5px;
+    }
+
+    .steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      counter-reset: steps;
+    }
+
+    .step {
+      position: relative;
+      padding-top: 56px;
+    }
+
+    .step::before {
+      counter-increment: steps;
+      content: counter(steps);
+      position: absolute;
+      left: 20px;
+      top: 18px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      color: #fff;
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(70,233,255,.22);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .copy-box {
+      border: 1px solid rgba(70,233,255,.24);
+      background:
+        linear-gradient(180deg, rgba(70,233,255,.10), rgba(255,255,255,.035)),
+        var(--panel);
+      border-radius: 30px;
+      padding: 22px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 410px;
+    }
+
+    .copy-box textarea {
+      width: 100%;
+      height: 136px;
+      resize: none;
+      margin-top: 14px;
+      border: 1px solid rgba(148,163,184,.16);
+      background: rgba(0,0,0,.34);
+      color: #dffcff;
+      border-radius: 16px;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      outline: none;
+    }
+
+    .copy-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .mini-list div {
+      display: flex;
+      gap: 10px;
+      color: var(--muted);
+      align-items: flex-start;
+      line-height: 1.45;
+    }
+
+    .mini-list b {
+      color: var(--txt);
+    }
+
+    .layouts {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .layout-card {
+      position: relative;
+      border-radius: 28px;
+      border: 1px solid rgba(148,163,184,.16);
+      background: rgba(255,255,255,.045);
+      padding: 18px;
+      overflow: hidden;
+      min-height: 245px;
+    }
+
+    .layout-preview {
+      height: 112px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.32);
+      border: 1px solid rgba(255,255,255,.10);
+      display: grid;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .layout-card h3 {
+      margin: 0 0 8px;
+      font-family: Rajdhani, sans-serif;
+      font-size: 24px;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+    }
+
+    .layout-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .normal-preview, .minimal-preview {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .compact-preview {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .preview-cover {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c3aed, #ff62bd, #46e9ff);
+    }
+
+    .preview-panel {
+      height: 56px;
+      border-radius: 13px;
+      background: rgba(255,255,255,.12);
+      padding: 9px;
+    }
+
+    .preview-panel.wide {
+      height: 62px;
+    }
+
+    .preview-panel.clean {
+      background: transparent;
+      padding: 4px 0;
+    }
+
+    .preview-panel span {
+      display: block;
+      height: 7px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.28);
+      margin: 5px 0;
+    }
+
+    .preview-panel span:nth-child(1) { width: 78%; }
+    .preview-panel span:nth-child(2) { width: 48%; background: rgba(70,233,255,.32); }
+    .preview-panel span:nth-child(3) { width: 90%; height: 5px; background: rgba(95,247,189,.24); }
+
+    .trouble {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .faq {
+      display: grid;
+      gap: 12px;
+    }
+
+    details.faq-item {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .faq-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 20px;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: "+";
+      color: var(--cyan);
+      font-size: 22px;
+    }
+
+    .faq-item[open] summary::after { content: "–"; }
+
+    .faq-item p {
+      margin: 0;
+      padding: 0 20px 18px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .cta {
+      border: 1px solid rgba(70,233,255,.22);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(139,92,246,.26), transparent 22rem),
+        radial-gradient(circle at 80% 20%, rgba(70,233,255,.13), transparent 20rem),
+        rgba(11,14,25,.78);
+      border-radius: 34px;
+      padding: 38px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .cta h2 { margin: 0 0 12px; }
+    .cta p {
+      color: var(--muted);
+      margin: 0 auto 22px;
+      max-width: 700px;
+      line-height: 1.58;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 26px 0 38px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    footer p { margin: 8px 0; }
+    footer a { color: var(--cyan); font-weight: 900; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translate(-50%, 18px);
+      opacity: 0;
+      pointer-events: none;
+      background: #101827;
+      color: white;
+      border: 1px solid rgba(95,247,189,.34);
+      box-shadow: var(--shadow);
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 900;
+      z-index: 99;
+      transition: .25s ease;
+    }
+
+    .toast.show {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1020px) {
+      .nav { display: none; }
+      .hero-grid, .split { grid-template-columns: 1fr; }
+      .features, .layouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .preview-shell { max-width: 680px; }
+    }
+
+    @media (max-width: 660px) {
+      .wrap { width: min(100% - 24px, var(--max)); }
+      .topbar-inner { min-height: 66px; }
+      .brand-text { font-size: 21px; }
+      .brand-pill { display: none; }
+      .brand img { width: 40px; height: 40px; }
+      .topbar .btn { padding-inline: 12px; font-size: 13px; }
+      .hero { padding-top: 48px; }
+      .hero-actions .btn { width: 100%; }
+      .features, .steps, .layouts, .trouble { grid-template-columns: 1fr; }
+      .section-head { display: block; }
+      .section-note { margin-top: 12px; }
+      .widget-demo { grid-template-columns: 78px 1fr; }
+      .cover-demo { min-height: 78px; }
+      .cover-demo::after { font-size: 46px; }
+      .info-demo { min-height: 78px; padding: 13px 14px; }
+      .topline-demo { margin-bottom: 9px; }
+      .song-title { font-size: 20px; }
+      .bar-demo, .time-demo { display: none; }
+      .layout-strip { grid-template-columns: 1fr; }
+      .cta { padding: 28px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#inicio" aria-label="Ir al inicio">
+        <img src="assets/images/mc.png" alt="Hipe Playing">
+        <div class="brand-lockup">
+          <div class="brand-text">Hipe Playing</div>
+          <div class="brand-pill">by jsmoctezuma</div>
+        </div>
+      </a>
+
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="#funciones">Funciones</a>
+        <a href="#instalacion">Instalación</a>
+        <a href="#importacion">Importación</a>
+        <a href="#layouts">Layouts</a>
+        <a href="#ayuda">Ayuda</a>
+      </nav>
+
+      <a class="btn btn-primary" href="./admin.html" target="_blank" rel="noopener noreferrer">Panel de control</a>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="kicker">Reproductor para OBS + Streamer.bot</div>
+          <h1>Hipe <span>Playing</span></h1>
+          <p class="lead">Muestra la canción activa de Windows en OBS con portada, título, artista, progreso, color de acento, layouts visuales y un admin para generar la URL sin tocar código.</p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="./admin.html" target="_blank" rel="noopener noreferrer">🚀 Abrir panel</a>
+            <button class="btn btn-secondary" type="button" data-copy-import>📦 Copiar importación</button>
+            <a class="btn btn-ghost" href="#instalacion">📘 Guía rápida</a>
+          </div>
+
+          <div class="badges" aria-label="Compatibilidades">
+            <span class="badge">OBS Studio</span>
+            <span class="badge">Streamer.bot</span>
+            <span class="badge">Windows SMTC</span>
+            <span class="badge">Spotify</span>
+            <span class="badge">YouTube Music</span>
+            <span class="badge">Amazon Music</span>
+          </div>
+        </div>
+
+        <aside class="preview-shell" aria-label="Vista previa visual de Hipe Playing">
+          <div class="window-head">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <span class="window-pill">Widget base 1200 × 300</span>
+          </div>
+
+          <div class="widget-demo">
+            <div class="cover-demo"></div>
+            <div class="info-demo">
+              <div class="topline-demo">
+                <span class="pill-demo">Spotify</span>
+                <span class="pill-demo">Reproduciendo</span>
+              </div>
+              <div class="song-title">Love Cherry Motion</div>
+              <div class="song-artist">LOONA</div>
+              <div class="bar-demo"><i></i></div>
+              <div class="time-demo"><span>00:43</span><span>04:27</span></div>
+            </div>
+          </div>
+
+          <div class="layout-strip">
+            <div class="mini-layout">
+              <strong>Normal</strong>
+              <div class="mini-normal">
+                <div class="mini-cover"></div>
+                <div class="mini-lines"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <div class="mini-layout">
+              <strong>Compacto</strong>
+              <div class="mini-compact">
+                <div class="mini-lines"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <div class="mini-layout">
+              <strong>Minimal</strong>
+              <div class="mini-minimal">
+                <div class="mini-cover"></div>
+                <div class="mini-lines"><span></span><span></span></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="funciones">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Reproductor musical</div>
+            <h2>Qué puede mostrar</h2>
+          </div>
+          <p class="section-note">Pensado para streamers que quieren enseñar qué canción está sonando sin capturas de pantalla ni overlays pesados.</p>
+        </div>
+
+        <div class="grid features">
+          <article class="card"><div class="card-icon">🎵</div><h3>Música activa</h3><p>Lee la sesión multimedia activa de Windows usando SMTC y Streamer.bot.</p></article>
+          <article class="card"><div class="card-icon">🖼️</div><h3>Portada</h3><p>Usa portada local de Windows y fallback online con Apple/iTunes y Deezer cuando aplica.</p></article>
+          <article class="card"><div class="card-icon">⏱️</div><h3>Progreso y tiempo</h3><p>Muestra tiempo actual, duración y barra de progreso cuando la app entrega esos datos.</p></article>
+          <article class="card"><div class="card-icon">🎨</div><h3>Color de acento</h3><p>Extrae un color de la portada para integrarlo visualmente al reproductor.</p></article>
+          <article class="card"><div class="card-icon">🧩</div><h3>3 layouts</h3><p>Normal, compacto y minimal para acomodarlo según tu escena de OBS.</p></article>
+          <article class="card"><div class="card-icon">⚙️</div><h3>Admin visual</h3><p>Configura host, puerto, fuente, escala, animaciones, ocultado y URL final para OBS.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="instalacion">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Guía rápida</div>
+            <h2>Instalación en 4 pasos</h2>
+          </div>
+          <p class="section-note">Necesitas OBS Studio, Streamer.bot con WebSocket Server activo y la acción importada.</p>
+        </div>
+
+        <div class="grid steps">
+          <article class="step"><h3>Abre el admin</h3><p>Entra a <b>admin.html</b>, revisa la conexión y ajusta layout, fuente, escala, animaciones y ocultado.</p></article>
+          <article class="step"><h3>Importa la acción</h3><p>Copia el código de importación y pégalo en Streamer.bot para crear la acción de lectura SMTC.</p></article>
+          <article class="step"><h3>Activa WebSocket</h3><p>Usa host <b>127.0.0.1</b> y puerto <b>8080</b>, o los datos que tengas configurados.</p></article>
+          <article class="step"><h3>Pégalo en OBS</h3><p>Copia la URL generada y úsala como Browser Source con tamaño <b>1200 × 300</b>.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="importacion">
+      <div class="wrap split">
+        <div class="copy-box">
+          <div class="eyebrow">Streamer.bot</div>
+          <h2>Código de importación</h2>
+          <p class="section-note">Este bloque importa la acción necesaria para leer la música activa de Windows y enviar los datos al widget.</p>
+
+          <div class="copy-actions">
+            <button class="btn btn-primary" type="button" data-copy-import>📋 Copiar código</button>
+            <button class="btn btn-secondary" type="button" data-select-import>Seleccionar texto</button>
+          </div>
+
+          <textarea id="importCode" spellcheck="false" aria-label="Código de importación para Streamer.bot">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</textarea>
+        </div>
+
+        <article class="panel">
+          <div class="eyebrow">Después de importar</div>
+          <h2>Qué debe existir</h2>
+          <div class="mini-list">
+            <div><span>✅</span><span><b>Acción:</b> HP - Poll Music.</span></div>
+            <div><span>✅</span><span><b>WebSocket Server:</b> activo en Streamer.bot.</span></div>
+            <div><span>✅</span><span><b>URL OBS:</b> generada desde el admin con <b>poll=350</b>.</span></div>
+            <div><span>✅</span><span><b>Fuente de navegador:</b> 1200 de ancho por 300 de alto.</span></div>
+            <div><span>✅</span><span><b>Preview:</b> el admin lo muestra al 50% solo visualmente, sin afectar OBS.</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="layouts">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Diseños incluidos</div>
+            <h2>Layouts del reproductor</h2>
+          </div>
+          <p class="section-note">Los tres estilos están conectados desde el admin y se mandan por URL al widget.</p>
+        </div>
+
+        <div class="grid layouts">
+          <article class="layout-card">
+            <div class="layout-preview">
+              <div class="normal-preview">
+                <div class="preview-cover"></div>
+                <div class="preview-panel"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <h3>Normal</h3>
+            <p>Diseño original con portada 270x270 y panel derecho con plataforma, estado, título, artista, barra y tiempos.</p>
+          </article>
+
+          <article class="layout-card">
+            <div class="layout-preview">
+              <div class="compact-preview">
+                <div class="preview-panel wide"><span></span><span></span><span></span></div>
+              </div>
+            </div>
+            <h3>Compacto</h3>
+            <p>Oculta la portada, elimina el espacio intermedio y expande el panel a todo el ancho útil.</p>
+          </article>
+
+          <article class="layout-card">
+            <div class="layout-preview">
+              <div class="minimal-preview">
+                <div class="preview-cover"></div>
+                <div class="preview-panel clean"><span></span><span></span></div>
+              </div>
+            </div>
+            <h3>Minimal</h3>
+            <p>Portada más texto limpio: título, artista y tiempo actual, sin fondo/tarjeta en el panel derecho.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="ayuda">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Ayuda rápida</div>
+            <h2>Problemas comunes</h2>
+          </div>
+          <p class="section-note">La mayoría de problemas se resuelven revisando WebSocket, tamaño OBS y si la app realmente entrega datos por SMTC.</p>
+        </div>
+
+        <div class="grid trouble">
+          <article class="trouble-card"><h3>No aparece nada</h3><p>Revisa que Streamer.bot esté abierto, WebSocket activo y que el admin marque Conectado.</p></article>
+          <article class="trouble-card"><h3>OBS se ve mal escalado</h3><p>Configura la fuente de navegador en 1200 × 300. El preview del admin está al 50% solo para verlo cómodo.</p></article>
+          <article class="trouble-card"><h3>Amazon no muestra duración</h3><p>Amazon Music a veces no entrega duración/progreso por SMTC. El widget muestra -:-- cuando no hay duración real.</p></article>
+          <article class="trouble-card"><h3>Portadas pixeladas</h3><p>Algunos navegadores entregan miniaturas pequeñas, por ejemplo 120x120. El backend no recomprime ni baja calidad.</p></article>
+        </div>
+
+        <div class="faq" style="margin-top:16px">
+          <details class="faq-item">
+            <summary>¿Por qué no usar capturas de pantalla?</summary>
+            <p>Porque el widget lee la sesión multimedia de Windows y renderiza su propio diseño, más limpio y configurable.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Funciona con navegadores?</summary>
+            <p>Sí, pero como fallback. Las apps dedicadas tienen prioridad para evitar que un video de navegador tape Spotify, Amazon o YouTube Music app.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Qué hace “Ocultar después”?</summary>
+            <p>Si está en 0, el widget queda visible mientras haya música. Si pones 10, aparece con canción nueva y se oculta después de 10 segundos.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="cta">
+          <h2>Listo para ponerlo en OBS</h2>
+          <p>Abre el panel, revisa que Streamer.bot esté conectado, elige layout y copia la URL final para tu Fuente de navegador.</p>
+          <div class="hero-actions" style="justify-content:center; margin:0">
+            <a class="btn btn-primary" href="./admin.html" target="_blank" rel="noopener noreferrer">Abrir panel de control</a>
+            <button class="btn btn-secondary" type="button" data-copy-import>Copiar importación</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p><strong>Hipe Playing</strong> · Reproductor musical para OBS + Streamer.bot</p>
+      <p>Creado para la Manco Squad por <a href="https://www.twitch.tv/jsmoctezuma" target="_blank" rel="noopener noreferrer">jsmoctezuma</a>.</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast">Copiado</div>
+
+  <script>
+    const importCode = document.getElementById("importCode");
+    const toast = document.getElementById("toast");
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    async function copyImportCode() {
+      const value = importCode.value.trim();
+      try {
+        await navigator.clipboard.writeText(value);
+        showToast("Código de importación copiado");
+      } catch {
+        importCode.focus();
+        importCode.select();
+        document.execCommand("copy");
+        showToast("Código seleccionado/copiadо");
+      }
+    }
+
+    document.querySelectorAll("[data-copy-import]").forEach((btn) => {
+      btn.addEventListener("click", copyImportCode);
+    });
+
+    document.querySelector("[data-select-import]")?.addEventListener("click", () => {
+      importCode.focus();
+      importCode.select();
+      showToast("Código seleccionado");
+    });
+  </script>
+</body>
+</html>
