@@ -100,6 +100,7 @@
     params.set("exitAnimation", textValue("exitAnimation", "fade"));
     params.set("animationMs", String(animationMs));
     params.set("poll", "350");
+    params.set("action", "Hipe Playing - Poll Music");
 
     return `${widgetBase(options.absolute === true)}?${params.toString()}`;
   }

@@ -33,7 +33,7 @@
     exitAnimation: params.get("exitAnimation") || "slide",
     animationMs: Number(params.get("animationMs") || 250),
 
-    actionName: params.get("action") || "HP - Poll Music",
+    actionName: params.get("action") || "Hipe Playing - Poll Music",
     pollMs: Number(params.get("poll") || 750),
 
     hideWhenPaused: true,
@@ -41,7 +41,7 @@
     reconnectMs: 2500,
     actionTimeoutMs: Number(params.get("actionTimeout") || 5000),
 
-    // Portada online opcional. No toca Streamer.bot ni HP - Poll Music.
+    // Portada online opcional. No toca Streamer.bot ni Hipe Playing - Poll Music.
     // Para apagarlo: widget.html?onlineArtwork=0
     onlineArtwork: params.get("onlineArtwork") !== "0",
     // auto = Apple/iTunes primero y Deezer como segundo fallback.
