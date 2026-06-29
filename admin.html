@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hipe Playing - Admin</title>
+  <meta name="description" content="Admin visual para Hipe Playing Widget." />
+  <link rel="icon" href="assets/images/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/admin.css" />
+  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <header class="sidebar-brand">
+        <div class="brand-mark">
+          <img src="assets/images/mc.png" alt="Manco Squad" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" />
+          <div class="brand-fallback">H</div>
+        </div>
+        <div class="brand-copy">
+          <h1>Hipe Playing</h1>
+          <p>by jsmoctezuma</p>
+        </div>
+      </header>
+
+      <main class="config-scroll">
+        <section class="panel">
+          <div class="panel-head">
+            <h2><span class="section-icon"><span class="iconify" data-icon="mdi:palette-outline"></span></span> Diseño del reproductor</h2>
+          </div>
+
+          <div class="panel-body">
+            <div class="field full">
+              <label>Formato visual <small>Normal listo · compacto/minimal preparados</small></label>
+              <div class="layout-grid" role="radiogroup" aria-label="Diseño del reproductor">
+                <input id="layoutNormal" type="radio" name="layout" value="normal" checked>
+                <label for="layoutNormal" class="layout-card">
+                  <span class="layout-icon"><span class="iconify" data-icon="mdi:view-dashboard-outline"></span></span>
+                  <strong>Normal</strong>
+                  <small>Diseño actual</small>
+                </label>
+
+                <input id="layoutCompact" type="radio" name="layout" value="compact">
+                <label for="layoutCompact" class="layout-card">
+                  <span class="layout-icon"><span class="iconify" data-icon="mdi:view-stream-outline"></span></span>
+                  <strong>Compacto</strong>
+                  <small>Una línea</small>
+                </label>
+
+                <input id="layoutMinimal" type="radio" name="layout" value="minimal">
+                <label for="layoutMinimal" class="layout-card">
+                  <span class="layout-icon"><span class="iconify" data-icon="mdi:crop-square"></span></span>
+                  <strong>Minimal</strong>
+                  <small>Limpio</small>
+                </label>
+              </div>
+            </div>
+
+            <div class="two-col">
+              <div class="field">
+                <label>Fuente global <small>Google Fonts</small></label>
+                <div class="control">
+                  <input id="font" list="fontOptions" autocomplete="off" placeholder="Ej: Inter, Poppins, Rajdhani" />
+                </div>
+                <datalist id="fontOptions">
+                  <option value="Inter"></option>
+                  <option value="Rajdhani"></option>
+                  <option value="Montserrat"></option>
+                  <option value="Poppins"></option>
+                  <option value="Bebas Neue"></option>
+                  <option value="Orbitron"></option>
+                </datalist>
+              </div>
+
+              <div class="field">
+                <label>Escala general <small id="scaleValue">100%</small></label>
+                <div class="control range-control">
+                  <input id="scale" type="range" min="0.80" max="1.20" step="0.05" value="1" />
+                </div>
+              </div>
+            </div>
+
+            <div class="inline-setting">
+              <div class="setting-copy">
+                <strong>Escuchar navegadores</strong>
+                <span>Chrome/Edge/Firefox solo entran cuando no hay una app dedicada reproduciendo.</span>
+              </div>
+              <label class="toggle"><input id="allowBrowsers" type="checkbox" checked><span class="slider"></span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2><span class="section-icon"><span class="iconify" data-icon="mdi:eye-outline"></span></span> Visibilidad y movimiento</h2>
+          </div>
+
+          <div class="panel-body motion-flat">
+            <div class="motion-clean-grid">
+              <div class="field motion-field">
+                <label>Ocultar después <small>0 = nunca se oculta</small></label>
+                <div class="control number-control">
+                  <input id="hideAfter" type="number" min="0" max="999" step="1" value="0" inputmode="numeric" />
+                  <span>seg</span>
+                </div>
+              </div>
+
+              <div class="field motion-field">
+                <label>Duración visual <small>velocidad entrada/salida</small></label>
+                <div class="control number-control">
+                  <input id="animationMs" type="number" min="100" max="1500" step="50" value="250" inputmode="numeric" />
+                  <span>ms</span>
+                </div>
+              </div>
+
+              <div class="field motion-field">
+                <label>Animación de entrada <small>cuando aparece</small></label>
+                <input id="enterAnimation" type="hidden" value="fade" />
+                <div class="custom-select" data-target="enterAnimation">
+                  <button class="control custom-select-button" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="custom-select-label">Desvanecer suave</span>
+                    <span class="iconify custom-select-arrow" data-icon="mdi:chevron-down"></span>
+                  </button>
+                  <div class="custom-select-menu" role="listbox">
+                    <button type="button" data-value="fade">Desvanecer suave</button>
+                    <button type="button" data-value="slide">Deslizar</button>
+                    <button type="button" data-value="pop">Aparecer con pop</button>
+                    <button type="button" data-value="none">Sin animación</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field motion-field">
+                <label>Animación de salida <small>cuando se oculta</small></label>
+                <input id="exitAnimation" type="hidden" value="fade" />
+                <div class="custom-select" data-target="exitAnimation">
+                  <button class="control custom-select-button" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="custom-select-label">Desvanecer suave</span>
+                    <span class="iconify custom-select-arrow" data-icon="mdi:chevron-down"></span>
+                  </button>
+                  <div class="custom-select-menu" role="listbox">
+                    <button type="button" data-value="fade">Desvanecer suave</button>
+                    <button type="button" data-value="slide">Deslizar</button>
+                    <button type="button" data-value="pop">Salir con pop</button>
+                    <button type="button" data-value="none">Sin animación</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2><span class="section-icon"><span class="iconify" data-icon="mdi:link-variant"></span></span> Conexión Streamer.bot</h2>
+          </div>
+
+          <div class="panel-body">
+            <div class="connection-grid">
+              <div class="field host-field">
+                <label>Host</label>
+                <div class="control with-copy">
+                  <input id="host" value="127.0.0.1" />
+                  <button class="tiny-copy" type="button" data-copy-field="host" aria-label="Copiar host"><span class="iconify" data-icon="mdi:content-copy"></span></button>
+                </div>
+              </div>
+
+              <div class="field port-field">
+                <label>Puerto</label>
+                <div class="control with-copy">
+                  <input id="port" type="number" min="1" max="65535" value="8080" />
+                  <button class="tiny-copy" type="button" data-copy-field="port" aria-label="Copiar puerto"><span class="iconify" data-icon="mdi:content-copy"></span></button>
+                </div>
+              </div>
+
+              <div class="field status-field">
+                <label>Estado</label>
+                <div class="connection-badge warn" id="connectionBadge"><span id="connectionDot"></span><strong id="connectionText">Conectando</strong></div>
+              </div>
+            </div>
+
+            <button class="test-connection" id="testConnectionBtn" type="button"><span class="iconify" data-icon="mdi:connection"></span> Probar conexión</button>
+            <p class="connection-note">El admin intenta conectar automáticamente al cargar. Usa el botón solo para reintentar si cambiaste host o puerto.</p>
+          </div>
+        </section>
+      </main>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="brand-mark">
+            <img src="assets/images/mc.png" alt="Manco Squad" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" />
+            <div class="brand-fallback">H</div>
+          </div>
+          <div class="brand-copy">
+            <h1>Hipe Playing</h1>
+            <p>by jsmoctezuma</p>
+          </div>
+        </div>
+
+        <div class="toast" id="toast">
+          <span class="toast-icon iconify" id="toastIcon" data-icon="mdi:alert-circle-outline"></span>
+          <span id="toastText">URL copiada</span>
+          <button type="button" aria-label="Cerrar toast">×</button>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn top-copy-btn copy-playing" id="copyObsBtn" type="button">
+            <span class="iconify" data-icon="mdi:link-variant"></span>
+            Copiar URL para OBS
+          </button>
+        </div>
+
+        <div class="identity">
+          <div class="avatar">
+            <img class="asset-img" data-asset="user" id="streamerAvatar" alt="Avatar del streamer" />
+          </div>
+          <div>
+            <strong><span id="streamerName">jsmoctezuma</span> <span class="identity-status-dot" id="identityDot" aria-hidden="true"></span></strong>
+            <span id="streamerPlatformWrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h16v11l-4 4h-4l-3 3v-3H4z"/></svg>
+              <span id="streamerPlatform">Twitch</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="live warn" id="liveState">
+          <span id="liveStateText">Conectando</span>
+          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </header>
+
+      <section class="preview-stage">
+        <article class="frame-card">
+          <div class="frame-head">
+            <strong id="frameTitle">Preview normal</strong>
+            <span id="frameSub">Base actual · 1200 × 300</span>
+          </div>
+          <div class="live-frame-wrap">
+            <div class="frame-scale" id="frameScale">
+              <iframe id="livePreview" class="live-frame" title="Preview Hipe Playing"></iframe>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>

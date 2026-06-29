@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Hipe Playing Widget</title>
+
+  <link rel="stylesheet" href="./assets/css/widget.css" />
+</head>
+<body>
+  <main id="hipe-playing-widget" class="hpw hpw-hidden">
+    <section class="hpw-card">
+      <div class="hpw-cover" id="hpw-cover">
+        <div class="hpw-cover-glow"></div>
+        <div class="hpw-cover-icon">♪</div>
+      </div>
+
+      <div class="hpw-info">
+        <div class="hpw-topline">
+          <span id="hpw-source" class="hpw-source">HIPE PLAYING</span>
+          <span id="hpw-status" class="hpw-status">Conectando...</span>
+        </div>
+
+        <div id="hpw-title" class="hpw-title">Esperando música...</div>
+        <div id="hpw-artist" class="hpw-artist">Streamer.bot WebSocket</div>
+
+        <div class="hpw-progress-wrap">
+          <div class="hpw-time-row">
+            <span id="hpw-current-time">0:00</span>
+            <span id="hpw-duration-time">0:00</span>
+          </div>
+
+          <div class="hpw-progress">
+            <div id="hpw-progress-bar" class="hpw-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="hpw-debug" class="hpw-debug">
+      Hipe Playing Widget
+    </div>
+  </main>
+
+  <script src="./assets/js/widget.js"></script>
+</body>
+</html>

@@ -1,0 +1,460 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --hpw-canvas-w: 1200px;
+  --hpw-canvas-h: 300px;
+
+  --hpw-margin-x: 10px;
+  --hpw-margin-y: 15px;
+  --hpw-gap: 20px;
+
+  --hpw-cover-size: 270px;
+  --hpw-panel-w: 890px;
+  --hpw-panel-h: 270px;
+
+  --hpw-text: #ffffff;
+  --hpw-muted: rgba(255, 255, 255, 0.82);
+  --hpw-soft: rgba(255, 255, 255, 0.18);
+  --hpw-accent: #f0b4ff;
+  --hpw-accent-rgb: 240, 180, 255;
+
+  --hpw-radius: 26px;
+  --hpw-radius-inner: 22px;
+
+  /* Ajustes opcionales del fondo derecho */
+  --hpw-panel-bg-size: cover;
+  --hpw-panel-bg-position: center center;
+  --hpw-scale: 1;
+  --hpw-slide-scale: 0.992;
+  --hpw-pop-scale: 0.94;
+  --hpw-animation-ms: 250ms;
+  --hpw-font: "Segoe UI Variable", "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: var(--hpw-font);
+}
+
+.hpw {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--hpw-canvas-w);
+  height: var(--hpw-canvas-h);
+  font-family: var(--hpw-font);
+  opacity: 1;
+  transform: translateY(0) scale(var(--hpw-scale));
+  transform-origin: top left;
+  transition:
+    opacity var(--hpw-animation-ms) ease,
+    transform var(--hpw-animation-ms) ease,
+    filter var(--hpw-animation-ms) ease;
+}
+
+.hpw-hidden {
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(3px);
+}
+
+.hpw[data-motion="exit"][data-exit-animation="fade"].hpw-hidden,
+.hpw[data-motion="enter"][data-enter-animation="fade"].hpw-hidden {
+  transform: translateY(0) scale(var(--hpw-scale));
+  filter: none;
+}
+
+.hpw[data-motion="exit"][data-exit-animation="slide"].hpw-hidden,
+.hpw[data-motion="enter"][data-enter-animation="slide"].hpw-hidden {
+  transform: translateY(14px) scale(var(--hpw-slide-scale));
+}
+
+.hpw[data-motion="exit"][data-exit-animation="pop"].hpw-hidden,
+.hpw[data-motion="enter"][data-enter-animation="pop"].hpw-hidden {
+  transform: translateY(0) scale(var(--hpw-pop-scale));
+  filter: none;
+}
+
+.hpw[data-motion="exit"][data-exit-animation="none"],
+.hpw[data-motion="enter"][data-enter-animation="none"] {
+  transition: none;
+}
+
+.hpw-card {
+  width: 100%;
+  height: 100%;
+  padding: var(--hpw-margin-y) var(--hpw-margin-x);
+  display: grid;
+  grid-template-columns: var(--hpw-cover-size) var(--hpw-panel-w);
+  grid-template-rows: var(--hpw-panel-h);
+  gap: var(--hpw-gap);
+  align-items: start;
+  background: transparent;
+}
+
+.hpw-cover {
+  position: relative;
+  width: var(--hpw-cover-size);
+  height: var(--hpw-cover-size);
+  border-radius: var(--hpw-radius);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 35% 24%, rgba(255, 255, 255, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(40, 40, 52, 0.95), rgba(10, 10, 15, 0.96));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.44),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.hpw-cover.hpw-has-artwork {
+  background-image: var(--hpw-artwork);
+}
+
+.hpw-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+
+.hpw-cover-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(var(--hpw-accent-rgb), 0.22), transparent 35%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 52%);
+  opacity: 0.7;
+  transition: opacity 280ms ease;
+}
+
+.hpw-cover.hpw-has-artwork .hpw-cover-glow {
+  opacity: 0;
+}
+
+.hpw-cover-icon {
+  position: absolute;
+  inset: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 74px;
+  font-weight: 900;
+  background: rgba(0, 0, 0, 0.22);
+  text-shadow: 0 0 28px rgba(255, 255, 255, 0.22);
+}
+
+.hpw-cover.hpw-has-artwork .hpw-cover-icon {
+  display: none;
+}
+
+.hpw-info {
+  position: relative;
+  width: var(--hpw-panel-w);
+  height: var(--hpw-panel-h);
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--hpw-radius);
+  padding: 17px 32px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background: rgba(78, 70, 80, 0.18);
+  box-shadow:
+    0 22px 46px rgba(0, 0, 0, 0.30),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.hpw-info::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--hpw-artwork);
+  background-size: var(--hpw-panel-bg-size);
+  background-position: var(--hpw-panel-bg-position);
+  background-repeat: no-repeat;
+  opacity: 0.94;
+  filter: saturate(0.98) brightness(0.91) contrast(0.98);
+  transition: opacity 220ms ease, filter 220ms ease, background-image 220ms ease;
+  pointer-events: none;
+}
+
+.hpw-info::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(64, 57, 65, 0.36), rgba(64, 57, 65, 0.36)),
+    linear-gradient(90deg, rgba(28, 26, 31, 0.18) 0%, rgba(255, 255, 255, 0.02) 48%, rgba(28, 26, 31, 0.16) 100%),
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.10), transparent 32%),
+    linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 52%, rgba(255,255,255,0.10) 100%);
+  pointer-events: none;
+}
+
+.hpw.hpw-artwork-loading .hpw-info::before {
+  opacity: 0.93;
+  filter: saturate(0.96) brightness(0.89) contrast(0.97);
+}
+
+.hpw.hpw-artwork-loading .hpw-cover {
+  filter: saturate(0.96);
+}
+
+.hpw-info > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hpw-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 42px;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hpw-source,
+.hpw-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 29px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(62, 62, 68, 0.34);
+  box-shadow: none;
+  backdrop-filter: blur(7px);
+}
+
+.hpw-source {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 760;
+  text-shadow: none;
+}
+
+.hpw-status {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 760;
+  text-shadow: none;
+}
+
+.hpw-title {
+  max-width: 100%;
+  color: var(--hpw-text);
+  font-size: 39px;
+  line-height: 1.15;
+  padding-bottom: 8px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.hpw-artist {
+  max-width: 100%;
+  margin-top: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 22px;
+  line-height: 1.24;
+  padding-bottom: 0;
+  font-weight: 460;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, 0.30);
+}
+
+.hpw-progress-wrap {
+  margin-top: 16px;
+  padding-top: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hpw-time-row {
+  order: 2;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+.hpw-progress {
+  order: 1;
+  position: relative;
+  width: 100%;
+  height: 13px;
+  overflow: visible;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.hpw-progress-bar {
+  position: relative;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hpw-accent);
+  box-shadow: 0 0 16px rgba(var(--hpw-accent-rgb), 0.30);
+  transition: width 180ms linear, background 260ms ease, box-shadow 260ms ease;
+}
+
+.hpw-progress-bar::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--hpw-accent);
+  transform: translateY(-50%);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.10),
+    0 2px 9px rgba(0, 0, 0, 0.16);
+}
+
+.hpw-progress-bar[style^="width: 0"]::after,
+.hpw-progress-bar[style="width: 0%;"]::after {
+  opacity: 0;
+}
+
+.hpw-debug {
+  display: none;
+  position: fixed;
+  left: 10px;
+  top: 310px;
+  padding: 7px 12px;
+  width: fit-content;
+  max-width: 1180px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.76);
+  background: rgba(0, 0, 0, 0.58);
+  font-size: 12px;
+}
+
+.hpw-debug-mode .hpw-debug {
+  display: block;
+}
+
+.hpw-debug-mode.hpw-hidden {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  pointer-events: auto;
+}
+
+.hpw-debug-mode.hpw-hidden .hpw-card {
+  display: none;
+}
+
+.hpw-debug-mode.hpw-hidden .hpw-debug {
+  display: block;
+  top: 15px;
+}
+
+
+/* Layout compacto:
+   mismo diseño interno del panel normal, pero el panel ocupa todo el ancho útil.
+   No afecta el layout normal. */
+.hpw-layout-compact .hpw-card {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.hpw-layout-compact .hpw-cover {
+  display: none;
+}
+
+.hpw-layout-compact .hpw-info {
+  width: 100%;
+}
+
+
+/* Layout minimal:
+   misma base del normal con portada 270x270,
+   pero el panel derecho queda limpio con 3 líneas.
+*/
+.hpw-layout-minimal .hpw-info {
+  justify-content: center;
+  padding: 24px 36px;
+}
+
+.hpw-layout-minimal .hpw-topline {
+  display: none;
+}
+
+.hpw-layout-minimal .hpw-title {
+  font-size: 60px;
+  line-height: 1.08;
+  padding-bottom: 10px;
+}
+
+.hpw-layout-minimal .hpw-artist {
+  font-size: 31px;
+  line-height: 1.18;
+  padding-bottom: 0;
+}
+
+.hpw-layout-minimal .hpw-progress-wrap {
+  margin-top: 18px;
+  padding-top: 0;
+  display: block;
+}
+
+.hpw-layout-minimal .hpw-progress {
+  display: none;
+}
+
+.hpw-layout-minimal .hpw-time-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0;
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+.hpw-layout-minimal #hpw-duration-time {
+  display: none;
+}
+
+
+/* Ajuste v26:
+   Minimal sin fondo/tarjeta en el panel derecho.
+   Deja solo portada + texto sobre transparencia. */
+.hpw-layout-minimal .hpw-info {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.hpw-layout-minimal .hpw-info::before,
+.hpw-layout-minimal .hpw-info::after {
+  display: none;
+}
