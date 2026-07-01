@@ -186,7 +186,7 @@ body {
   background-position: var(--hpw-panel-bg-position);
   background-repeat: no-repeat;
   opacity: 0.94;
-  filter: saturate(0.98) brightness(0.70) contrast(1.02);
+  filter: saturate(0.98) brightness(0.60) contrast(1.05);
   transition: opacity 220ms ease, filter 220ms ease, background-image 220ms ease;
   pointer-events: none;
 }
@@ -196,7 +196,7 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(0deg, rgba(64, 57, 65, 0.70), rgba(64, 57, 65, 0.70)),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
     linear-gradient(90deg, rgba(28, 26, 31, 0.18) 0%, rgba(255, 255, 255, 0.02) 48%, rgba(28, 26, 31, 0.16) 100%),
     radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.10), transparent 32%),
     linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 52%, rgba(255,255,255,0.10) 100%);
