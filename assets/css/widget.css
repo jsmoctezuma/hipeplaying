@@ -186,7 +186,7 @@ body {
   background-position: var(--hpw-panel-bg-position);
   background-repeat: no-repeat;
   opacity: 0.94;
-  filter: saturate(0.98) brightness(0.91) contrast(0.98);
+  filter: saturate(0.98) brightness(0.70) contrast(1.02);
   transition: opacity 220ms ease, filter 220ms ease, background-image 220ms ease;
   pointer-events: none;
 }
