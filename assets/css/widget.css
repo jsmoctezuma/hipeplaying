@@ -196,7 +196,7 @@ body {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(0deg, rgba(64, 57, 65, 0.60), rgba(64, 57, 65, 0.60)),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
     linear-gradient(90deg, rgba(28, 26, 31, 0.18) 0%, rgba(255, 255, 255, 0.02) 48%, rgba(28, 26, 31, 0.16) 100%),
     radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.10), transparent 32%),
     linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 52%, rgba(255,255,255,0.10) 100%);
